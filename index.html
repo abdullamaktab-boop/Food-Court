@@ -44,75 +44,81 @@
         <button id="closeAdmin" class="btn btn--ghost">Close</button>
       </div>
 
-      <p class="admin__hint">Use this panel to add, edit, and delete items. Changes are saved in this browser.</p>
+      <section id="authSection" class="security">
+        <h3>Admin Access</h3>
+        <p class="admin__hint">Sign in with your Firebase admin account to edit menu items.</p>
 
-      <form id="itemForm" class="admin__form">
-        <input type="hidden" id="editingId" />
-
-        <label>
-          Section
-          <select id="itemSection" required></select>
-        </label>
-
-        <label>
-          Category
-          <input id="itemCategory" required placeholder="e.g., Burgers" />
-        </label>
-
-        <label>
-          Item Name
-          <input id="itemName" required placeholder="e.g., Classic Beef Burger" />
-        </label>
-
-        <label>
-          Price (IQD)
-          <input id="itemPrice" required type="number" min="0" step="250" placeholder="e.g., 8500" />
-        </label>
-
-        <label>
-          Image URL
-          <input id="itemImage" placeholder="https://... (optional if uploading a file)" />
-        </label>
-
-        <label>
-          Upload Image
-          <input id="itemImageFile" type="file" accept="image/*" />
-        </label>
-
-        <div class="upload-preview hidden" id="uploadPreviewWrap">
-          <img id="uploadPreview" alt="Selected upload preview" />
-          <button id="clearUpload" type="button" class="btn btn--ghost">Clear Upload</button>
-        </div>
-
-        <label class="full-width">
-          Description
-          <textarea id="itemDescription" rows="3" placeholder="Optional short description"></textarea>
-        </label>
-
-        <div class="form-actions full-width">
-          <button type="submit" class="btn">Save Item</button>
-          <button id="resetForm" type="button" class="btn btn--ghost">Clear</button>
-        </div>
-      </form>
-
-      <section class="security">
-        <h3>Security</h3>
-        <p class="admin__hint">Protect menu editing with an admin password.</p>
-        <form id="passwordForm" class="password-form">
+        <form id="loginForm" class="password-form">
           <label>
-            Current Password
-            <input id="currentPassword" type="password" required />
+            Admin Email
+            <input id="adminEmail" type="email" required autocomplete="email" />
           </label>
           <label>
-            New Password
-            <input id="newPassword" type="password" minlength="6" required />
+            Admin Password
+            <input id="adminPassword" type="password" required autocomplete="current-password" />
           </label>
-          <button type="submit" class="btn">Update Password</button>
+          <button type="submit" class="btn">Sign In</button>
         </form>
+
+        <div id="authStatus" class="admin__hint"></div>
+        <button id="logoutBtn" class="btn btn--ghost hidden" type="button">Sign Out</button>
       </section>
 
-      <h3>Existing Items</h3>
-      <div id="adminList" class="admin__list"></div>
+      <section id="editorSection" class="hidden">
+        <p class="admin__hint">Changes are synced to Firebase, so all devices see updates instantly.</p>
+
+        <form id="itemForm" class="admin__form">
+          <input type="hidden" id="editingId" />
+
+          <label>
+            Section
+            <select id="itemSection" required></select>
+          </label>
+
+          <label>
+            Category
+            <input id="itemCategory" required placeholder="e.g., Burgers" />
+          </label>
+
+          <label>
+            Item Name
+            <input id="itemName" required placeholder="e.g., Classic Beef Burger" />
+          </label>
+
+          <label>
+            Price (IQD)
+            <input id="itemPrice" required type="number" min="0" step="250" placeholder="e.g., 8500" />
+          </label>
+
+          <label>
+            Image URL
+            <input id="itemImage" placeholder="https://... (optional if uploading a file)" />
+          </label>
+
+          <label>
+            Upload Image
+            <input id="itemImageFile" type="file" accept="image/*" />
+          </label>
+
+          <div class="upload-preview hidden" id="uploadPreviewWrap">
+            <img id="uploadPreview" alt="Selected upload preview" />
+            <button id="clearUpload" type="button" class="btn btn--ghost">Clear Upload</button>
+          </div>
+
+          <label class="full-width">
+            Description
+            <textarea id="itemDescription" rows="3" placeholder="Optional short description"></textarea>
+          </label>
+
+          <div class="form-actions full-width">
+            <button type="submit" class="btn">Save Item</button>
+            <button id="resetForm" type="button" class="btn btn--ghost">Clear</button>
+          </div>
+        </form>
+
+        <h3>Existing Items</h3>
+        <div id="adminList" class="admin__list"></div>
+      </section>
     </div>
   </aside>
 
@@ -130,6 +136,7 @@
     </article>
   </template>
 
-  <script src="script.js"></script>
+  <script src="firebase-config.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
