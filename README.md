@@ -18,6 +18,7 @@ Single-page menu website for **Food Court** with these sections:
 - Add item photos by direct URL **or local file upload**
 - Menu editing protected by an admin password
 - Subtle idle/entry animations for hero and cards
+- Food images shown fully inside cards (mobile-first framing)
 - Saved changes using `localStorage`
 
 ## Admin password
