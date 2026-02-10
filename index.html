@@ -12,6 +12,9 @@
 <body>
   <header class="hero">
     <div class="hero__overlay"></div>
+    <div class="hero__orb hero__orb--one" aria-hidden="true"></div>
+    <div class="hero__orb hero__orb--two" aria-hidden="true"></div>
+
     <div class="container hero__content">
       <div>
         <p class="eyebrow">Welcome to</p>
@@ -68,19 +71,45 @@
 
         <label>
           Image URL
-          <input id="itemImage" required placeholder="https://..." />
+          <input id="itemImage" placeholder="https://... (optional if uploading a file)" />
         </label>
 
         <label>
+          Upload Image
+          <input id="itemImageFile" type="file" accept="image/*" />
+        </label>
+
+        <div class="upload-preview hidden" id="uploadPreviewWrap">
+          <img id="uploadPreview" alt="Selected upload preview" />
+          <button id="clearUpload" type="button" class="btn btn--ghost">Clear Upload</button>
+        </div>
+
+        <label class="full-width">
           Description
           <textarea id="itemDescription" rows="3" placeholder="Optional short description"></textarea>
         </label>
 
-        <div class="form-actions">
+        <div class="form-actions full-width">
           <button type="submit" class="btn">Save Item</button>
           <button id="resetForm" type="button" class="btn btn--ghost">Clear</button>
         </div>
       </form>
+
+      <section class="security">
+        <h3>Security</h3>
+        <p class="admin__hint">Protect menu editing with an admin password.</p>
+        <form id="passwordForm" class="password-form">
+          <label>
+            Current Password
+            <input id="currentPassword" type="password" required />
+          </label>
+          <label>
+            New Password
+            <input id="newPassword" type="password" minlength="6" required />
+          </label>
+          <button type="submit" class="btn">Update Password</button>
+        </form>
+      </section>
 
       <h3>Existing Items</h3>
       <div id="adminList" class="admin__list"></div>

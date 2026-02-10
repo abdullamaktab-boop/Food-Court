@@ -29,8 +29,11 @@ const starterMenu = [
 ];
 
 const storageKey = "food-court-menu-v1";
+const passwordKey = "food-court-admin-password-v1";
+const defaultAdminPassword = "foodcourt123";
 let activeSection = sections[0];
 let menu = loadMenu();
+let uploadedImageData = "";
 
 const sectionTabs = document.getElementById("sectionTabs");
 const menuContainer = document.getElementById("menuContainer");
@@ -38,21 +41,34 @@ const template = document.getElementById("menuCardTemplate");
 const adminPanel = document.getElementById("adminPanel");
 const adminList = document.getElementById("adminList");
 const itemForm = document.getElementById("itemForm");
+const imageFileInput = document.getElementById("itemImageFile");
+const uploadPreviewWrap = document.getElementById("uploadPreviewWrap");
+const uploadPreview = document.getElementById("uploadPreview");
 
 bootstrap();
 
 function bootstrap() {
+  ensureAdminPassword();
   renderTabs();
   renderMenu();
   fillSectionDropdown();
   renderAdminList();
 
   document.getElementById("themeToggle").addEventListener("click", toggleTheme);
-  document.getElementById("adminToggle").addEventListener("click", () => adminPanel.classList.remove("hidden"));
+  document.getElementById("adminToggle").addEventListener("click", openAdminWithPassword);
   document.getElementById("closeAdmin").addEventListener("click", () => adminPanel.classList.add("hidden"));
   document.getElementById("resetForm").addEventListener("click", resetForm);
+  document.getElementById("clearUpload").addEventListener("click", clearUpload);
 
+  imageFileInput.addEventListener("change", handleImageUpload);
   itemForm.addEventListener("submit", onSaveItem);
+  document.getElementById("passwordForm").addEventListener("submit", onChangePassword);
+}
+
+function ensureAdminPassword() {
+  if (!localStorage.getItem(passwordKey)) {
+    localStorage.setItem(passwordKey, defaultAdminPassword);
+  }
 }
 
 function loadMenu() {
@@ -68,6 +84,71 @@ function loadMenu() {
 
 function saveMenu() {
   localStorage.setItem(storageKey, JSON.stringify(menu));
+}
+
+function openAdminWithPassword() {
+  const password = prompt("Enter admin password to manage menu:");
+  if (password === null) return;
+
+  const saved = localStorage.getItem(passwordKey);
+  if (password !== saved) {
+    alert("Incorrect password.");
+    return;
+  }
+
+  adminPanel.classList.remove("hidden");
+}
+
+function onChangePassword(event) {
+  event.preventDefault();
+
+  const current = document.getElementById("currentPassword").value;
+  const next = document.getElementById("newPassword").value;
+
+  if (current !== localStorage.getItem(passwordKey)) {
+    alert("Current password is incorrect.");
+    return;
+  }
+
+  if (next.length < 6) {
+    alert("New password must be at least 6 characters.");
+    return;
+  }
+
+  localStorage.setItem(passwordKey, next);
+  event.target.reset();
+  alert("Admin password updated successfully.");
+}
+
+async function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    alert("Please choose a valid image file.");
+    event.target.value = "";
+    return;
+  }
+
+  uploadedImageData = await fileToDataUrl(file);
+  uploadPreview.src = uploadedImageData;
+  uploadPreviewWrap.classList.remove("hidden");
+}
+
+function clearUpload() {
+  uploadedImageData = "";
+  imageFileInput.value = "";
+  uploadPreview.src = "";
+  uploadPreviewWrap.classList.add("hidden");
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 function renderTabs() {
@@ -157,6 +238,14 @@ function renderAdminList() {
 function onSaveItem(event) {
   event.preventDefault();
 
+  const manualImage = document.getElementById("itemImage").value.trim();
+  const resolvedImage = uploadedImageData || manualImage;
+
+  if (!resolvedImage) {
+    alert("Please provide an image URL or upload an image file.");
+    return;
+  }
+
   const id = document.getElementById("editingId").value || crypto.randomUUID();
   const item = {
     id,
@@ -164,7 +253,7 @@ function onSaveItem(event) {
     category: document.getElementById("itemCategory").value.trim(),
     name: document.getElementById("itemName").value.trim(),
     price: Number(document.getElementById("itemPrice").value),
-    image: document.getElementById("itemImage").value.trim(),
+    image: resolvedImage,
     description: document.getElementById("itemDescription").value.trim(),
   };
 
@@ -190,8 +279,16 @@ function populateForm(id) {
   document.getElementById("itemCategory").value = item.category;
   document.getElementById("itemName").value = item.name;
   document.getElementById("itemPrice").value = item.price;
-  document.getElementById("itemImage").value = item.image;
+  document.getElementById("itemImage").value = item.image.startsWith("data:image") ? "" : item.image;
   document.getElementById("itemDescription").value = item.description;
+
+  if (item.image.startsWith("data:image")) {
+    uploadedImageData = item.image;
+    uploadPreview.src = item.image;
+    uploadPreviewWrap.classList.remove("hidden");
+  } else {
+    clearUpload();
+  }
 }
 
 function deleteItem(id) {
@@ -205,6 +302,7 @@ function resetForm() {
   itemForm.reset();
   document.getElementById("editingId").value = "";
   document.getElementById("itemSection").value = activeSection;
+  clearUpload();
 }
 
 function formatIQD(value) {
