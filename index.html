@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Food Court | Digital Menu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="hero__overlay"></div>
+    <div class="hero__orb hero__orb--one" aria-hidden="true"></div>
+    <div class="hero__orb hero__orb--two" aria-hidden="true"></div>
+
+    <div class="container hero__content">
+      <div>
+        <p class="eyebrow">Welcome to</p>
+        <h1>Food Court</h1>
+        <p class="hero__subtitle">Explore all sections in one place. All menu items are <strong>Halal</strong>.</p>
+      </div>
+      <div class="hero__actions">
+        <button id="themeToggle" class="btn btn--ghost" aria-label="Toggle theme">🌙 Dark</button>
+        <button id="adminToggle" class="btn">Manage Menu</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-content">
+    <section class="section-switcher" aria-label="Restaurant sections">
+      <h2>Choose a Section</h2>
+      <div id="sectionTabs" class="tabs"></div>
+    </section>
+
+    <section id="menuContainer" class="menu"></section>
+  </main>
+
+  <aside id="adminPanel" class="admin hidden" aria-label="Menu management panel">
+    <div class="admin__content">
+      <div class="admin__header">
+        <h2>Menu Management</h2>
+        <button id="closeAdmin" class="btn btn--ghost">Close</button>
+      </div>
+
+      <p class="admin__hint">Use this panel to add, edit, and delete items. Changes are saved in this browser.</p>
+
+      <form id="itemForm" class="admin__form">
+        <input type="hidden" id="editingId" />
+
+        <label>
+          Section
+          <select id="itemSection" required></select>
+        </label>
+
+        <label>
+          Category
+          <input id="itemCategory" required placeholder="e.g., Burgers" />
+        </label>
+
+        <label>
+          Item Name
+          <input id="itemName" required placeholder="e.g., Classic Beef Burger" />
+        </label>
+
+        <label>
+          Price (IQD)
+          <input id="itemPrice" required type="number" min="0" step="250" placeholder="e.g., 8500" />
+        </label>
+
+        <label>
+          Image URL
+          <input id="itemImage" placeholder="https://... (optional if uploading a file)" />
+        </label>
+
+        <label>
+          Upload Image
+          <input id="itemImageFile" type="file" accept="image/*" />
+        </label>
+
+        <div class="upload-preview hidden" id="uploadPreviewWrap">
+          <img id="uploadPreview" alt="Selected upload preview" />
+          <button id="clearUpload" type="button" class="btn btn--ghost">Clear Upload</button>
+        </div>
+
+        <label class="full-width">
+          Description
+          <textarea id="itemDescription" rows="3" placeholder="Optional short description"></textarea>
+        </label>
+
+        <div class="form-actions full-width">
+          <button type="submit" class="btn">Save Item</button>
+          <button id="resetForm" type="button" class="btn btn--ghost">Clear</button>
+        </div>
+      </form>
+
+      <section class="security">
+        <h3>Security</h3>
+        <p class="admin__hint">Protect menu editing with an admin password.</p>
+        <form id="passwordForm" class="password-form">
+          <label>
+            Current Password
+            <input id="currentPassword" type="password" required />
+          </label>
+          <label>
+            New Password
+            <input id="newPassword" type="password" minlength="6" required />
+          </label>
+          <button type="submit" class="btn">Update Password</button>
+        </form>
+      </section>
+
+      <h3>Existing Items</h3>
+      <div id="adminList" class="admin__list"></div>
+    </div>
+  </aside>
+
+  <template id="menuCardTemplate">
+    <article class="menu-card">
+      <img class="menu-card__image" alt="" loading="lazy" />
+      <div class="menu-card__body">
+        <div class="menu-card__title-row">
+          <h4 class="menu-card__name"></h4>
+          <span class="menu-card__price"></span>
+        </div>
+        <p class="menu-card__desc"></p>
+        <span class="halal-tag">Halal</span>
+      </div>
+    </article>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>
