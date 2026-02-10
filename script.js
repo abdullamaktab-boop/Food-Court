@@ -5,9 +5,7 @@ import {
   doc,
   setDoc,
   deleteDoc,
-  onSnapshot,
-  query,
-  orderBy
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import {
   getAuth,
@@ -121,19 +119,25 @@ function watchAuth() {
 }
 
 function watchMenu() {
-  const menuQuery = query(menuCollection, orderBy("section"), orderBy("category"), orderBy("name"));
-
   onSnapshot(
-    menuQuery,
+    menuCollection,
     (snapshot) => {
-      const cloudItems = snapshot.docs.map((entry) => ({ id: entry.id, ...entry.data() }));
+      const cloudItems = snapshot.docs
+        .map((entry) => ({ id: entry.id, ...entry.data() }))
+        .sort((a, b) =>
+          String(a.section || "").localeCompare(String(b.section || ""))
+          || String(a.category || "").localeCompare(String(b.category || ""))
+          || String(a.name || "").localeCompare(String(b.name || ""))
+        );
+
       menu = cloudItems.length ? cloudItems : starterMenu;
       renderMenu();
       if (isAdminAuthenticated) renderAdminList();
     },
     (error) => {
-      console.error(error);
-      alert("Could not load shared menu. Check Firebase config/rules.");
+      console.error("Firestore watch error:", error);
+      const details = error?.code ? `${error.code}: ${error.message || ""}` : "Unknown Firestore error";
+      alert(`Could not load shared menu. ${details}`);
       menu = starterMenu;
       renderMenu();
     }
@@ -199,11 +203,13 @@ async function uploadToCloudinary(file) {
     body,
   });
 
-  if (!response.ok) {
-    throw new Error("Upload failed");
+  const data = await response.json();
+
+  if (!response.ok || !data.secure_url) {
+    const reason = data?.error?.message || `HTTP ${response.status}`;
+    throw new Error(`Cloudinary upload failed: ${reason}`);
   }
 
-  const data = await response.json();
   return data.secure_url;
 }
 
@@ -327,8 +333,9 @@ async function onSaveItem(event) {
 
     await setDoc(doc(db, "menuItems", id), item);
     resetForm();
-  } catch {
-    alert("Image upload failed. Check Cloudinary config and upload preset.");
+  } catch (error) {
+    console.error("Save item error:", error);
+    alert(`Save failed: ${error?.message || "Unknown error"}`);
   } finally {
     if (saveButton) saveButton.disabled = false;
   }

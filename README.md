@@ -70,6 +70,18 @@ window.FOOD_COURT_FIREBASE_CONFIG = {
 };
 ```
 
+
+## Troubleshooting
+
+- If you see `Could not load shared menu...`:
+  - confirm Firestore rules are published (read=true, write=auth)
+  - confirm Firestore database exists in the same Firebase project
+  - check `firebase-config.js` has **one** `window.FOOD_COURT_FIREBASE_CONFIG` block only
+- If upload fails:
+  - verify Cloudinary preset is **Unsigned**
+  - verify `cloudinaryCloudName` and `cloudinaryUploadPreset` values exactly match Cloudinary dashboard
+  - open browser console to see detailed error text shown by the app
+
 ## Run locally
 
 ```bash
