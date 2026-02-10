@@ -37,6 +37,13 @@ const starterMenu = [
 
 const firebaseConfig = window.FOOD_COURT_FIREBASE_CONFIG;
 const firebaseEnabled = Boolean(firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "REPLACE_ME");
+const cloudinaryEnabled = Boolean(
+  firebaseConfig
+  && firebaseConfig.cloudinaryCloudName
+  && firebaseConfig.cloudinaryUploadPreset
+  && firebaseConfig.cloudinaryCloudName !== "REPLACE_ME"
+  && firebaseConfig.cloudinaryUploadPreset !== "REPLACE_ME"
+);
 
 const app = firebaseEnabled ? initializeApp(firebaseConfig) : null;
 const db = firebaseEnabled ? getFirestore(app) : null;
@@ -46,6 +53,7 @@ const menuCollection = firebaseEnabled ? collection(db, "menuItems") : null;
 let activeSection = sections[0];
 let menu = [];
 let isAdminAuthenticated = false;
+let selectedUploadFile = null;
 
 const sectionTabs = document.getElementById("sectionTabs");
 const menuContainer = document.getElementById("menuContainer");
@@ -57,6 +65,9 @@ const loginForm = document.getElementById("loginForm");
 const logoutBtn = document.getElementById("logoutBtn");
 const authStatus = document.getElementById("authStatus");
 const editorSection = document.getElementById("editorSection");
+const imageFileInput = document.getElementById("itemImageFile");
+const uploadPreviewWrap = document.getElementById("uploadPreviewWrap");
+const uploadPreview = document.getElementById("uploadPreview");
 
 bootstrap();
 
@@ -81,10 +92,12 @@ function bindUiEvents() {
   document.getElementById("adminToggle").addEventListener("click", () => adminPanel.classList.remove("hidden"));
   document.getElementById("closeAdmin").addEventListener("click", () => adminPanel.classList.add("hidden"));
   document.getElementById("resetForm").addEventListener("click", resetForm);
+  document.getElementById("clearUpload").addEventListener("click", clearUpload);
 
   itemForm.addEventListener("submit", onSaveItem);
   loginForm.addEventListener("submit", onLogin);
   logoutBtn.addEventListener("click", onLogout);
+  imageFileInput.addEventListener("change", onImageSelect);
 }
 
 function watchAuth() {
@@ -146,6 +159,52 @@ async function onLogout() {
   if (!firebaseEnabled) return;
   await signOut(auth);
   resetForm();
+}
+
+function onImageSelect(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    alert("Please choose a valid image file.");
+    clearUpload();
+    return;
+  }
+
+  selectedUploadFile = file;
+  uploadPreview.src = URL.createObjectURL(file);
+  uploadPreviewWrap.classList.remove("hidden");
+}
+
+function clearUpload() {
+  selectedUploadFile = null;
+  imageFileInput.value = "";
+  uploadPreview.src = "";
+  uploadPreviewWrap.classList.add("hidden");
+}
+
+async function uploadToCloudinary(file) {
+  if (!cloudinaryEnabled) {
+    throw new Error("Cloudinary not configured");
+  }
+
+  const endpoint = `https://api.cloudinary.com/v1_1/${firebaseConfig.cloudinaryCloudName}/image/upload`;
+  const body = new FormData();
+  body.append("file", file);
+  body.append("upload_preset", firebaseConfig.cloudinaryUploadPreset);
+  body.append("folder", "food-court-menu");
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    body,
+  });
+
+  if (!response.ok) {
+    throw new Error("Upload failed");
+  }
+
+  const data = await response.json();
+  return data.secure_url;
 }
 
 function renderTabs() {
@@ -239,26 +298,40 @@ async function onSaveItem(event) {
     return;
   }
 
-  const id = document.getElementById("editingId").value || crypto.randomUUID();
-  const image = document.getElementById("itemImage").value.trim();
+  const saveButton = event.submitter;
+  if (saveButton) saveButton.disabled = true;
 
-  if (!image) {
-    alert("Please provide an image URL.");
-    return;
+  try {
+    const id = document.getElementById("editingId").value || crypto.randomUUID();
+    const manualImage = document.getElementById("itemImage").value.trim();
+    let image = manualImage;
+
+    if (selectedUploadFile) {
+      image = await uploadToCloudinary(selectedUploadFile);
+    }
+
+    if (!image) {
+      alert("Please provide an image URL or upload an image file.");
+      return;
+    }
+
+    const item = {
+      section: document.getElementById("itemSection").value,
+      category: document.getElementById("itemCategory").value.trim(),
+      name: document.getElementById("itemName").value.trim(),
+      price: Number(document.getElementById("itemPrice").value),
+      image,
+      description: document.getElementById("itemDescription").value.trim(),
+      halal: true,
+    };
+
+    await setDoc(doc(db, "menuItems", id), item);
+    resetForm();
+  } catch {
+    alert("Image upload failed. Check Cloudinary config and upload preset.");
+  } finally {
+    if (saveButton) saveButton.disabled = false;
   }
-
-  const item = {
-    section: document.getElementById("itemSection").value,
-    category: document.getElementById("itemCategory").value.trim(),
-    name: document.getElementById("itemName").value.trim(),
-    price: Number(document.getElementById("itemPrice").value),
-    image,
-    description: document.getElementById("itemDescription").value.trim(),
-    halal: true,
-  };
-
-  await setDoc(doc(db, "menuItems", id), item);
-  resetForm();
 }
 
 function populateForm(id) {
@@ -272,6 +345,7 @@ function populateForm(id) {
   document.getElementById("itemPrice").value = item.price;
   document.getElementById("itemImage").value = item.image || "";
   document.getElementById("itemDescription").value = item.description || "";
+  clearUpload();
 }
 
 async function deleteItem(id) {
@@ -287,6 +361,7 @@ function resetForm() {
   itemForm.reset();
   document.getElementById("editingId").value = "";
   document.getElementById("itemSection").value = activeSection;
+  clearUpload();
 }
 
 function formatIQD(value) {

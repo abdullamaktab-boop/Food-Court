@@ -46,7 +46,7 @@
 
       <section class="security">
         <h3>Admin Access</h3>
-        <p class="admin__hint">Option A: Shared menu sync with Firestore + image URL only (no file upload cost).</p>
+        <p class="admin__hint">Shared sync is via Firestore. Upload from phone/PC uses Cloudinary unsigned upload preset.</p>
 
         <form id="loginForm" class="password-form">
           <label>
@@ -65,7 +65,7 @@
       </section>
 
       <section id="editorSection" class="hidden">
-        <p class="admin__hint">All changes sync to everyone visiting the site. Add images by public URL.</p>
+        <p class="admin__hint">All changes sync to everyone. Add image URL manually OR upload an image from your phone gallery.</p>
 
         <form id="itemForm" class="admin__form">
           <input type="hidden" id="editingId" />
@@ -92,8 +92,18 @@
 
           <label class="full-width">
             Image URL
-            <input id="itemImage" required placeholder="https://..." />
+            <input id="itemImage" placeholder="https://... (optional if uploading file)" />
           </label>
+
+          <label class="full-width">
+            Upload Image (Phone/PC)
+            <input id="itemImageFile" type="file" accept="image/*" />
+          </label>
+
+          <div class="upload-preview hidden full-width" id="uploadPreviewWrap">
+            <img id="uploadPreview" alt="Selected upload preview" />
+            <button id="clearUpload" type="button" class="btn btn--ghost">Clear Upload</button>
+          </div>
 
           <label class="full-width">
             Description
