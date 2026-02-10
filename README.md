@@ -15,12 +15,15 @@ Single-page menu website for **Food Court** with these sections:
 - Item cards with image, name, price (IQD), description, and Halal tag
 - Dark and light mode toggle
 - Browser-based menu management panel (add/edit/delete)
-- Add item photos by direct URL **or local file upload**
 - Menu editing protected by Firebase Auth sign-in
 - Shared menu data with Firestore (all devices see the same updates)
-- Images stored in Firebase Storage
+- Storage-free mode: images are added via public URL only
 - Subtle idle/entry animations for hero and cards
 - Food images shown fully inside cards (mobile-first framing)
+
+## Why this path
+
+To keep costs low/free, this setup avoids Firebase Storage uploads. Instead, admins paste a hosted image URL for each menu item.
 
 ## Firebase setup (required)
 
@@ -28,7 +31,6 @@ Single-page menu website for **Food Court** with these sections:
 
 - Firebase project
 - Firestore Database (production mode)
-- Firebase Storage
 - Authentication > Email/Password enabled
 - Create at least one admin user
 
@@ -43,20 +45,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /menuItems/{itemId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-  }
-}
-```
-
-### 4) Storage rules (example)
-
-```txt
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /menu-images/{allPaths=**} {
       allow read: if true;
       allow write: if request.auth != null;
     }

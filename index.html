@@ -65,7 +65,7 @@
       </section>
 
       <section id="editorSection" class="hidden">
-        <p class="admin__hint">Changes are synced to Firebase, so all devices see updates instantly.</p>
+        <p class="admin__hint">Changes sync through Firestore across all devices. For photos, paste a public image URL.</p>
 
         <form id="itemForm" class="admin__form">
           <input type="hidden" id="editingId" />
@@ -90,20 +90,10 @@
             <input id="itemPrice" required type="number" min="0" step="250" placeholder="e.g., 8500" />
           </label>
 
-          <label>
+          <label class="full-width">
             Image URL
-            <input id="itemImage" placeholder="https://... (optional if uploading a file)" />
+            <input id="itemImage" required placeholder="https://..." />
           </label>
-
-          <label>
-            Upload Image
-            <input id="itemImageFile" type="file" accept="image/*" />
-          </label>
-
-          <div class="upload-preview hidden" id="uploadPreviewWrap">
-            <img id="uploadPreview" alt="Selected upload preview" />
-            <button id="clearUpload" type="button" class="btn btn--ghost">Clear Upload</button>
-          </div>
 
           <label class="full-width">
             Description

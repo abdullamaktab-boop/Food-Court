@@ -15,12 +15,6 @@ import {
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import {
-  getStorage,
-  ref,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
 const sections = [
   "Burger Factory",
@@ -47,13 +41,10 @@ const firebaseEnabled = Boolean(firebaseConfig && firebaseConfig.apiKey && fireb
 const app = firebaseEnabled ? initializeApp(firebaseConfig) : null;
 const db = firebaseEnabled ? getFirestore(app) : null;
 const auth = firebaseEnabled ? getAuth(app) : null;
-const storage = firebaseEnabled ? getStorage(app) : null;
-
 const menuCollection = firebaseEnabled ? collection(db, "menuItems") : null;
 
 let activeSection = sections[0];
 let menu = [];
-let selectedUploadFile = null;
 let isAdminAuthenticated = false;
 
 const sectionTabs = document.getElementById("sectionTabs");
@@ -62,9 +53,6 @@ const template = document.getElementById("menuCardTemplate");
 const adminPanel = document.getElementById("adminPanel");
 const adminList = document.getElementById("adminList");
 const itemForm = document.getElementById("itemForm");
-const imageFileInput = document.getElementById("itemImageFile");
-const uploadPreviewWrap = document.getElementById("uploadPreviewWrap");
-const uploadPreview = document.getElementById("uploadPreview");
 const loginForm = document.getElementById("loginForm");
 const logoutBtn = document.getElementById("logoutBtn");
 const authStatus = document.getElementById("authStatus");
@@ -93,9 +81,7 @@ function bindUiEvents() {
   document.getElementById("adminToggle").addEventListener("click", () => adminPanel.classList.remove("hidden"));
   document.getElementById("closeAdmin").addEventListener("click", () => adminPanel.classList.add("hidden"));
   document.getElementById("resetForm").addEventListener("click", resetForm);
-  document.getElementById("clearUpload").addEventListener("click", clearUpload);
 
-  imageFileInput.addEventListener("change", handleImageUpload);
   itemForm.addEventListener("submit", onSaveItem);
   loginForm.addEventListener("submit", onLogin);
   logoutBtn.addEventListener("click", onLogout);
@@ -158,28 +144,6 @@ async function onLogout() {
   if (!firebaseEnabled) return;
   await signOut(auth);
   resetForm();
-}
-
-function handleImageUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  if (!file.type.startsWith("image/")) {
-    alert("Please choose a valid image file.");
-    event.target.value = "";
-    return;
-  }
-
-  selectedUploadFile = file;
-  uploadPreview.src = URL.createObjectURL(file);
-  uploadPreviewWrap.classList.remove("hidden");
-}
-
-function clearUpload() {
-  selectedUploadFile = null;
-  imageFileInput.value = "";
-  uploadPreview.src = "";
-  uploadPreviewWrap.classList.add("hidden");
 }
 
 function renderTabs() {
@@ -274,17 +238,10 @@ async function onSaveItem(event) {
   }
 
   const id = document.getElementById("editingId").value || crypto.randomUUID();
-  const manualImage = document.getElementById("itemImage").value.trim();
-  let image = manualImage;
-
-  if (selectedUploadFile) {
-    const storageRef = ref(storage, `menu-images/${id}-${Date.now()}-${selectedUploadFile.name}`);
-    await uploadBytes(storageRef, selectedUploadFile);
-    image = await getDownloadURL(storageRef);
-  }
+  const image = document.getElementById("itemImage").value.trim();
 
   if (!image) {
-    alert("Please provide an image URL or upload an image file.");
+    alert("Please provide an image URL.");
     return;
   }
 
@@ -313,8 +270,6 @@ function populateForm(id) {
   document.getElementById("itemPrice").value = item.price;
   document.getElementById("itemImage").value = item.image || "";
   document.getElementById("itemDescription").value = item.description || "";
-
-  clearUpload();
 }
 
 async function deleteItem(id) {
@@ -330,7 +285,6 @@ function resetForm() {
   itemForm.reset();
   document.getElementById("editingId").value = "";
   document.getElementById("itemSection").value = activeSection;
-  clearUpload();
 }
 
 function formatIQD(value) {
