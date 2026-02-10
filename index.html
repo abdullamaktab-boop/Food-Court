@@ -44,71 +44,49 @@
         <button id="closeAdmin" class="btn btn--ghost">Close</button>
       </div>
 
-      <section id="authSection" class="security">
-        <h3>Admin Access</h3>
-        <p class="admin__hint">Sign in with your Firebase admin account to edit menu items.</p>
+      <p class="admin__hint">Menu changes are stored in this device/browser only.</p>
 
-        <form id="loginForm" class="password-form">
-          <label>
-            Admin Email
-            <input id="adminEmail" type="email" required autocomplete="email" />
-          </label>
-          <label>
-            Admin Password
-            <input id="adminPassword" type="password" required autocomplete="current-password" />
-          </label>
-          <button type="submit" class="btn">Sign In</button>
-        </form>
+      <form id="itemForm" class="admin__form">
+        <input type="hidden" id="editingId" />
 
-        <div id="authStatus" class="admin__hint"></div>
-        <button id="logoutBtn" class="btn btn--ghost hidden" type="button">Sign Out</button>
-      </section>
+        <label>
+          Section
+          <select id="itemSection" required></select>
+        </label>
 
-      <section id="editorSection" class="hidden">
-        <p class="admin__hint">Changes sync through Firestore across all devices. For photos, paste a public image URL.</p>
+        <label>
+          Category
+          <input id="itemCategory" required placeholder="e.g., Burgers" />
+        </label>
 
-        <form id="itemForm" class="admin__form">
-          <input type="hidden" id="editingId" />
+        <label>
+          Item Name
+          <input id="itemName" required placeholder="e.g., Classic Beef Burger" />
+        </label>
 
-          <label>
-            Section
-            <select id="itemSection" required></select>
-          </label>
+        <label>
+          Price (IQD)
+          <input id="itemPrice" required type="number" min="0" step="250" placeholder="e.g., 8500" />
+        </label>
 
-          <label>
-            Category
-            <input id="itemCategory" required placeholder="e.g., Burgers" />
-          </label>
+        <label class="full-width">
+          Image URL
+          <input id="itemImage" required placeholder="https://..." />
+        </label>
 
-          <label>
-            Item Name
-            <input id="itemName" required placeholder="e.g., Classic Beef Burger" />
-          </label>
+        <label class="full-width">
+          Description
+          <textarea id="itemDescription" rows="3" placeholder="Optional short description"></textarea>
+        </label>
 
-          <label>
-            Price (IQD)
-            <input id="itemPrice" required type="number" min="0" step="250" placeholder="e.g., 8500" />
-          </label>
+        <div class="form-actions full-width">
+          <button type="submit" class="btn">Save Item</button>
+          <button id="resetForm" type="button" class="btn btn--ghost">Clear</button>
+        </div>
+      </form>
 
-          <label class="full-width">
-            Image URL
-            <input id="itemImage" required placeholder="https://..." />
-          </label>
-
-          <label class="full-width">
-            Description
-            <textarea id="itemDescription" rows="3" placeholder="Optional short description"></textarea>
-          </label>
-
-          <div class="form-actions full-width">
-            <button type="submit" class="btn">Save Item</button>
-            <button id="resetForm" type="button" class="btn btn--ghost">Clear</button>
-          </div>
-        </form>
-
-        <h3>Existing Items</h3>
-        <div id="adminList" class="admin__list"></div>
-      </section>
+      <h3>Existing Items</h3>
+      <div id="adminList" class="admin__list"></div>
     </div>
   </aside>
 
@@ -126,7 +104,6 @@
     </article>
   </template>
 
-  <script src="firebase-config.js"></script>
-  <script type="module" src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
